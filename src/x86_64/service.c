@@ -19,7 +19,6 @@
 
 //#define STAGE3_INIT_DEBUG
 //#define MM_DEBUG
-
 #ifdef STAGE3_INIT_DEBUG
 #define init_debug(x, ...) do {rprintf("INIT: " x "\n", ##__VA_ARGS__);} while(0)
 #else

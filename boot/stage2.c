@@ -7,7 +7,7 @@
 #include <serial.h>
 #include <drivers/ata.h>
 
-//#define STAGE2_DEBUG
+#define STAGE2_DEBUG
 //#define DEBUG_STAGE2_ALLOC
 
 #ifdef STAGE2_DEBUG
@@ -176,6 +176,8 @@ closure_function(0, 1, void, fail,
     halt("filesystem_read_entire failed: %v\n", s);
 }
 
+s64 pt_offset;
+
 static void setup_page_tables()
 {
     stage2_debug("%s\n", __func__);
@@ -222,6 +224,7 @@ closure_function(0, 1, status, kernel_read_complete,
     /* save kernel elf image for use in stage3 (for symbol data) */
     create_region(u64_from_pointer(buffer_ref(kb, 0)), pad(buffer_length(kb), PAGESIZE), REGION_KERNIMAGE);
 
+    /* truncate to 32-bit is ok; we'll move it up in setup64 */
     stage2_debug("%s: load_elf\n", __func__);
     void *k = load_elf(kb, 0, stack_closure(kernel_elf_map));
     if (!k) {
@@ -232,7 +235,7 @@ closure_function(0, 1, status, kernel_read_complete,
     assert(working_saved_base);
     create_region(working_saved_base, STAGE2_WORKING_HEAP_SIZE, REGION_PHYSICAL);
 
-    stage2_debug("%s: run64, start address %p\n", __func__, k);
+    stage2_debug("%s: run64, start address 0xffffffff%8lx\n", __func__, u64_from_pointer(k));
     run64(u64_from_pointer(k));
     halt("failed to start long mode\n");
 }

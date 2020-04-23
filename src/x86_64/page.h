@@ -16,29 +16,6 @@
 #define PAGE_PROT_FLAGS    (PAGE_NO_EXEC | PAGE_USER | PAGE_WRITABLE)
 #define PAGE_DEV_FLAGS     (PAGE_WRITABLE | PAGE_CACHE_DISABLE | PAGE_NO_EXEC)
 
-typedef u64 *page;
-
-static inline u64 phys_from_pte(u64 pte)
-{
-    /* page directory pointer base address [51:12] */
-    return pte & (MASK(52) & ~PAGEMASK);
-}
-
-static inline page page_from_pte(u64 pte)
-{
-    return (page)pointer_from_u64(phys_from_pte(pte));
-}
-
-static inline u64 flags_from_pte(u64 pte)
-{
-    return pte & PAGE_FLAGS_MASK;
-}
-
-static inline u64 pindex(u64 x, u64 offset)
-{
-    return ((x >> offset) & MASK(9));
-}
-
 static inline boolean pt_entry_is_present(u64 entry)
 {
     return (entry & PAGE_PRESENT) != 0;
