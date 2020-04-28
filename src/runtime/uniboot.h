@@ -1,5 +1,10 @@
 #include <predef.h>
 
+#define KMEM_BASE   0xffff800000000000ull
+#define KMEM_LIMIT  0xfffff00000000000ull
+#define KERNEL_BASE 0xffffffff80000000ull
+#define PAGES_BASE  0xffffffffc0000000ull
+
 #ifdef BOOT
 
 #include <def32.h>
@@ -7,27 +12,28 @@
 #else /* BOOT */
 
 #include <def64.h>
-#define user_va_tag_offset 44
+#define USER_VA_TAG_OFFSET 44
 #ifdef STAGE3
-#define va_tag_offset 40        /* 1TB */
+#define VA_TAG_BASE   KMEM_BASE
+#define VA_TAG_OFFSET 39
+#define VA_TAG_WIDTH  8
 #else
-#define va_tag_offset user_va_tag_offset
+#define VA_TAG_BASE   0
+#define VA_TAG_OFFSET USER_VA_TAG_OFFSET
+#define VA_TAG_WIDTH  3
 #endif
 
 static inline void *tag(void* v, u64 tval) {
-  return pointer_from_u64((tval << va_tag_offset) | u64_from_pointer(v));
+    return pointer_from_u64(VA_TAG_BASE | (tval << VA_TAG_OFFSET) | u64_from_pointer(v));
 }
 
 static inline u16 tagof(void* v) {
-  return (u64_from_pointer(v) >> va_tag_offset);
+    return (u64_from_pointer(v) >> VA_TAG_OFFSET) & ((1ull << VA_TAG_WIDTH) - 1);
 }
 
 #define valueof(__x) (__x)
 
 #endif /* BOOT */
-
-#define KERNEL_BASE 0xffffffff80000000ull
-#define PAGES_BASE  0xffffffffc0000000ull
 
 // XXX nuke
 /* needed for physical region allocator, before we ever look at the
